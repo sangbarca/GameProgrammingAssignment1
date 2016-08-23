@@ -23,6 +23,8 @@ while not g_end_game:
         if (event.type == pygame.KEYDOWN):
             print "aesea"
             
+        if (event.type == pygame.MOUSEBUTTONDOWN):
+            a = 1
     # --- Game logic should go here
  
     # --- Drawing code should go here
