@@ -1,2 +1,2 @@
-#XXX
+#MAIN PROJECT
 Hi

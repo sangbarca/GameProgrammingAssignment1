@@ -14,13 +14,14 @@ import Resource.AnimationCreator as ANIM
 #Enemy = namedtuple("Enemy", "positionX positionY animation timing start_time current_state")
 
 class Enemy:
-    def __init__(self, ppositionX, ppositionY, panimation, ptiming, pstart_time, pcurrent_state):
+    def __init__(self, ppositionX, ppositionY, panimation, ptiming, pstart_time, pcurrent_state, pradius):
         self.positionX = ppositionX
         self.positionY = ppositionY
         self.animation = panimation
         self.timing = ptiming
         self.start_time = pstart_time
         self.current_state = pcurrent_state
+        self.radius= pradius
         
     positionX = 0
     positionY = 0 
@@ -28,6 +29,7 @@ class Enemy:
     timing = 0
     start_time = 0
     current_state = 0
+    radius = 0
 
 m_enemy_list = []
 
@@ -42,10 +44,12 @@ SPAWN_RATE = 0.1 # spawn per second
 
 base_time_stamp = 0
 
-###### VARIABLES ##############
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 
+###### VARIABLES ##############
+
+current_click_position = 0
 
 
 size = (SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -125,7 +129,13 @@ def spawnMonster(code):
                           (ANIM.getBoltanim(), ANIM.getFlameanim(), ANIM.getSmokeanim()),
                           (900, 2000, 900),
                           pygame.time.get_ticks(),
-                          0 )
+                          0,
+                          30 )
         new_enemy.animation[0].play()
         m_enemy_list.append(new_enemy)
+        
+        
+def click(pos):
+    global current_click_position
+    current_click_position = pos
     

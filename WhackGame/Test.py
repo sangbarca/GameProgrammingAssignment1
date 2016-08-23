@@ -55,6 +55,7 @@ def getanim():
 
 
 myanimation = ANIM.getBoltanim()
+
 myanimation.play()
 dara.play()
 mainClock = pygame.time.Clock()
@@ -68,12 +69,14 @@ while True:
         if event.type == KEYDOWN and event.key == K_l:
             # press "L" key to stop looping
             myanimation.loop = False
-
-    myanimation.blit(windowSurface, (100, 50))
+    myanimation.anchor('center')
+    myanimation.blit(windowSurface, (0, 0))
+    
+    m = myanimation.getRect()
+    
+    print m
     
     pygame.display.update()
-    a  = a + 1
-    print a
     mainClock.tick(60) # Feel free to experiment with any FPS setting.
     
 def schedule():

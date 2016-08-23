@@ -343,7 +343,7 @@ class PygAnimation(object):
         return pygame.Rect(0, 0, maxWidth, maxHeight)
 
 
-    def anchor(self, anchorPoint=NORTHWEST):
+    def anchor(self, anchorPoint= CENTER):
         # If the Surface objects are of different sizes, align them all to a
         # specific "anchor point" (one of the NORTH, SOUTH, SOUTHEAST, etc. constants)
         #

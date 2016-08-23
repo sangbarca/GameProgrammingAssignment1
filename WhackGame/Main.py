@@ -1,5 +1,4 @@
 import pygame
-import GameCore as game
 import GameCore
 
 ######### INIT #################### 
@@ -10,7 +9,7 @@ g_end_game = False
 GameCore.initGame()
 
 clock = pygame.time.Clock()
-game.testfunc()
+GameCore.testfunc()
 
 ######## MAIN LOOP ################
 
@@ -24,7 +23,8 @@ while not g_end_game:
             print "aesea"
             
         if (event.type == pygame.MOUSEBUTTONDOWN):
-            a = 1
+            pos = pygame.mouse.get_pos()
+            GameCore.click(pos)
     # --- Game logic should go here
  
     # --- Drawing code should go here
