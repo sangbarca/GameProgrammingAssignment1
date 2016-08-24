@@ -1,6 +1,7 @@
 import pygame
 import random
 import Resource.AnimationCreator as ANIM
+import GameManager
 
 ###### TYPES ##################
 
@@ -31,30 +32,52 @@ class Enemy:
     current_state = 0
     radius = 0
 
+
+##########################################################
+
+
+
+class AttackAnimation:
+    def __init__(self, pposition, panimation, pstart_time, pduration):
+        self.position = pposition
+        self.animation = panimation
+        self.start_time = pstart_time
+        self.duration = pduration
+    position = 0   # (posX, posY)
+    animation = 0  # animation to render
+    start_time = 0 # start time (timestamp)
+    duration = 0   # animation duration
+
 m_enemy_list = []
+m_attack_animation_list = []
+
 
 ###### CONSTANT ##############
 
-SPAWN_RATE = 0.1 # spawn per second
-
-# EX: SPAWN_RATE = 0.2
-# CALCULATE : 0.2 (20%) for each second -> 5s == 100 percent spawn
-# RATE = ElapseTime (ms) * SPAWN_RATE / 1000 x 100 (%)
-#
-
 base_time_stamp = 0
 
-SCREEN_WIDTH = 640
-SCREEN_HEIGHT = 480
+SCREEN_WIDTH = 1000
+SCREEN_HEIGHT = 600
+
+SHOW_HIT_ATTACK_COUNT = True
+TIME_FROM_LAST_MONSTER_SPAWN_TO_END_GAME = 5000 #ms
 
 ###### VARIABLES ##############
 
 size = (SCREEN_WIDTH, SCREEN_HEIGHT)
 screen = pygame.display.set_mode(size)
 
-def initGame():
-    
-    
+game_state = 1
+# 0: PREGAME 
+# 1: PLAYING
+# 2: ENDGAME
+##############################
+
+spawned_enemy = 0
+finish_spawn = False
+finish_time_stamp = 0
+
+def initGame():    
     pygame.display.set_caption("My gamme")
 
 def testfunc():
@@ -65,33 +88,64 @@ def render():
     screen.fill((0x00, 0x00, 0x00))
     pygame.draw.rect(screen, (0x00, 0xFF, 0x00), [55, 50, 20, 25])
     
-    # Select the font to use, size, bold, italics
-    font = pygame.font.SysFont('Calibri', 25, True, False)
-    text = font.render("My text",True,(0xFF, 0xFF, 0xFF))
+    if game_state == 1:
 
-    screen.blit(text, [250, 250])
-    
-    schedule()
-    
-    # --- Go ahead and update the screen with what we've drawn.
+        ##### GAME UI #########################################################
+
+        ##### HIT CALCULATION #################################################
+
+        # Select the font to use, size, bold, italics
+        font = pygame.font.SysFont('Calibri', 25, True, False)
+        text = font.render("Hit = " + str(GameManager.instance.hit_count) + " / " + str(GameManager.instance.attack_count),True,(0xFF, 0xFF, 0xFF))
+
+        screen.blit(text, [0, 0])
+        
+
+        ##### SCHEDULE ANIMATIONS | EVENTS ####################################
+
+        schedule()
+
+    if game_state == 2:
+        font = pygame.font.SysFont('Calibri', 25, True, False)
+        text = font.render("END GAME",True,(0xFF, 0xFF, 0xFF))
+
+        hit_count = font.render("Hit   : " + str(GameManager.instance.hit_count),True,(0xFF, 0xFF, 0xFF))
+        attack_count = font.render("Attack: " + str(GameManager.instance.attack_count),True,(0xFF, 0xFF, 0xFF))
+
+        screen.blit(text, [0, 0])
+        screen.blit(hit_count, [SCREEN_WIDTH * 0.3, SCREEN_HEIGHT * 0.4])
+        screen.blit(attack_count, [SCREEN_WIDTH * 0.3, SCREEN_HEIGHT * 0.6])
+
     pygame.display.flip()
     
 def schedule():
-    ################ DEFINITIONS
+    ################ DEFINITIONS ##########################################
     
     global base_time_stamp
+    global finish_time_stamp
+    global game_state
     
-    ################ SPAWN CALCULATION
-    
-    elapse_time_from_last_spawn = pygame.time.get_ticks() - base_time_stamp
-    spawn_rate = SPAWN_RATE * elapse_time_from_last_spawn / 10.0
-    rate = random.randint(0, 100)
-    
-    if rate <= spawn_rate:
-        spawnMonster(0)
-        base_time_stamp = pygame.time.get_ticks()
-    
-    ################ HANDLE
+    if finish_spawn == False:
+        ################ SPAWN CALCULATION ################################
+        elapse_time_from_last_spawn = pygame.time.get_ticks() - base_time_stamp
+        spawn_rate = GameManager.instance.SPAWN_RATE * elapse_time_from_last_spawn / 10.0
+        rate = random.randint(GameManager.instance.DELAY_SPAWN, 100)
+        
+        if rate <= spawn_rate:
+            spawnMonster(0)
+            base_time_stamp = pygame.time.get_ticks()
+    else:
+        ################ TIMING TO ENDGAME ################################
+        if (pygame.time.get_ticks() - finish_time_stamp) > TIME_FROM_LAST_MONSTER_SPAWN_TO_END_GAME:
+            game_state = 2
+
+    #print '------------------------'
+    #print spawn_rate
+    #print rate
+    #print '------------------------'
+
+    ################ HANDLE ###############################################
+    ####### ENEMY ############
     for enemy in m_enemy_list:
         if enemy.current_state == 0: ### SPAWN
             enemy.animation[0].blit(screen, (enemy.positionX, enemy.positionY))
@@ -119,8 +173,23 @@ def schedule():
                 enemy.current_state = 4
                 enemy.animation[2].stop()
                 m_enemy_list.remove(enemy)
+    ##### ATTACK ANIMATION ####
+    for attack_animation in m_attack_animation_list:
+        bounding_box = attack_animation.animation.getRect()
+        attack_animation.animation.blit(screen, (attack_animation.position[0] - bounding_box.width / 2, attack_animation.position[1] - bounding_box.height / 2))
+        if (pygame.time.get_ticks() - attack_animation.start_time) > attack_animation.duration:
+            attack_animation.animation.stop()
+            m_attack_animation_list.remove(attack_animation)
+
 
 def spawnMonster(code):
+    global spawned_enemy
+    global finish_spawn
+    global finish_time_stamp
+    spawned_enemy = spawned_enemy + 1
+    if spawned_enemy == GameManager.instance.num_of_enemy:
+        finish_spawn = True
+        finish_time_stamp = pygame.time.get_ticks()
     if code == 0:
         posX = random.randint(0, SCREEN_WIDTH)
         posY = random.randint(0, SCREEN_HEIGHT)
@@ -143,6 +212,15 @@ def checkClickWithinCircle(center_point, radius, click_position):
         return True
     return False
 def click(pos):
+
+    attack_anim = AttackAnimation(pos, ANIM.getAttackanim1(), pygame.time.get_ticks(), 1250)
+    attack_anim.animation.play()
+    m_attack_animation_list.append(attack_anim)
+
+    GameManager.instance.smash()
+
+    hit = False
+
     for enemy in m_enemy_list:
         if enemy.current_state == 3:
             continue
@@ -155,3 +233,6 @@ def click(pos):
             enemy.animation[enemy.current_state].stop()
             enemy.current_state = 3
             enemy.start_time = pygame.time.get_ticks()
+            hit = True
+    if hit == True:
+        GameManager.instance.hitEnemy()
