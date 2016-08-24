@@ -54,7 +54,7 @@ def getanim():
                                  ('Resource/bolt_strike_0010.png', 0.1)])
 
 
-myanimation = ANIM.getBoltanim()
+myanimation = ANIM.getExplosionanim()
 
 myanimation.play()
 dara.play()

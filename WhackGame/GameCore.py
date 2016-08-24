@@ -49,9 +49,6 @@ SCREEN_HEIGHT = 480
 
 ###### VARIABLES ##############
 
-current_click_position = 0
-
-
 size = (SCREEN_WIDTH, SCREEN_HEIGHT)
 screen = pygame.display.set_mode(size)
 
@@ -116,7 +113,13 @@ def schedule():
                 enemy.current_state = 4
                 enemy.animation[2].stop()
                 m_enemy_list.remove(enemy)
-    
+        if enemy.current_state == 3: ### DYING
+            enemy.animation[3].blit(screen, (enemy.positionX, enemy.positionY)) 
+            if enemy.timing[3] < (pygame.time.get_ticks() - enemy.start_time): #### TIME OUT ####
+                enemy.current_state = 4
+                enemy.animation[2].stop()
+                m_enemy_list.remove(enemy)
+
 def spawnMonster(code):
     if code == 0:
         posX = random.randint(0, SCREEN_WIDTH)
@@ -126,8 +129,8 @@ def spawnMonster(code):
         new_enemy = Enemy(
                           posX, 
                           posY, 
-                          (ANIM.getBoltanim(), ANIM.getFlameanim(), ANIM.getSmokeanim()),
-                          (900, 2000, 900),
+                          (ANIM.getBoltanim(), ANIM.getFlameanim(), ANIM.getSmokeanim(), ANIM.getExplosionanim()),
+                          (900, 2000, 900, 2000),
                           pygame.time.get_ticks(),
                           0,
                           30 )
@@ -135,7 +138,20 @@ def spawnMonster(code):
         m_enemy_list.append(new_enemy)
         
         
+def checkClickWithinCircle(center_point, radius, click_position):
+    if ((center_point[0] - click_position[0]) * (center_point[0] - click_position[0]) + (center_point[1] - click_position[1]) * (center_point[1] - click_position[1])) < (radius * radius) : #within
+        return True
+    return False
 def click(pos):
-    global current_click_position
-    current_click_position = pos
-    
+    for enemy in m_enemy_list:
+        if enemy.current_state == 3:
+            continue
+        bounding_box = enemy.animation[enemy.current_state].getRect()
+        is_within = checkClickWithinCircle((enemy.positionX + bounding_box.width / 2, enemy.positionY + bounding_box.height / 2), 
+                                            bounding_box.width / 2, 
+                                            pos)
+        if is_within == True:
+            enemy.animation[3].play()
+            enemy.animation[enemy.current_state].stop()
+            enemy.current_state = 3
+            enemy.start_time = pygame.time.get_ticks()

@@ -13,7 +13,6 @@ GameCore.testfunc()
 
 ######## MAIN LOOP ################
 
-
 while not g_end_game:
     # --- Main event loop
     for event in pygame.event.get(): # User did something
