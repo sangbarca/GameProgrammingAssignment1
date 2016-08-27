@@ -54,7 +54,7 @@ def getanim():
                                  ('Resource/bolt_strike_0010.png', 0.1)])
 
 
-myanimation = ANIM.getAttackanim1()
+myanimation = ANIM.getPsyduckanim()
 
 myanimation.play()
 dara.play()

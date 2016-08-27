@@ -1,11 +1,11 @@
 class GameManager(object):
 	def __init__(self):
-		self.num_of_enemy = 5
+		self.num_of_enemy = 15
 	#### PLAYER PERFORMANCE ####
 	attack_count = 0
 	hit_count = 0
 	#### LEVEL DATA ############
-	SPAWN_RATE = 0.2 # spawn per second
+	SPAWN_RATE = 0.3 # spawn per second
 	DELAY_SPAWN = 20 # from 0 to 100
 
 	# EX: SPAWN_RATE = 0.2
